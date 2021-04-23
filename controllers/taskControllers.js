@@ -1,5 +1,4 @@
 const Task = require('../models/Task');
-const { subscribe } = require('../routes/taskRoutes');
 
 const FetchTasksAll = async (req, res) => {
     try {
@@ -73,23 +72,12 @@ const UpdateTask = async (req, res) => {
         const task_id = req.params.id;
 
         if (task_id) {
-            const { toEditTitle, toEditStatus, toEditSubtasks } = req.body;
+            const { toEditTitle, toEditStatus } = req.body;
 
             try {
                 await Task.findByIdAndUpdate(task_id, {
                     title: toEditTitle,
                     status: toEditStatus
-                });
-
-                toEditSubtasks.forEach(async task => {
-                    await Task.findOneAndUpdate(
-                        { _id: task_id },
-                        {
-                            $set: {
-                                'subtasks.$.title': task
-                            }
-                        }
-                    );
                 });
 
                 res.json({ msg: 'Task updated!' });
@@ -114,8 +102,8 @@ const UpdateSubTask = async (req, res) => {
         const { toEditTask } = req.body;
 
         try {
-            await Task.findOneAndUpdate(
-                { _id: task_id, 'subtasks.id': sub_task_id },
+            await Task.updateOne(
+                { _id: task_id, 'subtasks._id': sub_task_id },
                 {
                     $set: {
                         'subtasks.$.title': toEditTask
@@ -132,7 +120,33 @@ const UpdateSubTask = async (req, res) => {
     }
 };
 
-const DeleteSubTask = async (req, res) => {};
+const DeleteSubTask = async (req, res) => {
+    const isAdmin = req.isAdmin;
+
+    if (isAdmin) {
+        const task_id = req.params.id;
+        const sub_task_id = req.params.sub_id;
+
+        try {
+            await Task.findOneAndUpdate(
+                { _id: task_id },
+                {
+                    $pull: {
+                        subtasks: {
+                            _id: sub_task_id
+                        }
+                    }
+                }
+            );
+
+            res.json({ msg: 'Sub task deleted!' });
+        } catch (err) {
+            res.json({ errMsg: err.message });
+        }
+    } else {
+        res.json({ errMsg: 'Admin rights only.' });
+    }
+};
 
 module.exports = {
     FetchTasksAll,
