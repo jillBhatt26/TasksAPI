@@ -24,7 +24,7 @@ const options = {
             {
                 url: 'http://localhost:5000'
             }
-        ],
+        ]
     },
     apis: ['./routes/*.js']
 };
@@ -53,3 +53,5 @@ app.use('/', taskRoutes);
 
 // documentation route
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
+
+module.exports = app;
