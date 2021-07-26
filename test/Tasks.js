@@ -50,6 +50,11 @@ describe('Tasks API', () => {
             // send the request using chai http module
             chai.request(server)
                 .post('/add')
+                .send({
+                    task: 'New Task 1',
+                    subTasks: ['Sub Task 1'],
+                    status: false
+                })
                 .end((err, res) => {
                     // errors test
                     expect(err).to.be.null;
@@ -57,11 +62,17 @@ describe('Tasks API', () => {
                     // response status code test
                     expect(res.statusCode).to.equal(200);
 
-                    // response body property test
-                    expect(res.body).to.have.property('msg');
+                    // response body keys test
+                    expect(res.body).to.have.any.keys('errMsg', 'msg');
 
-                    // response body property data type test
-                    expect(res.body.msg).to.be.a('string');
+                    // response body properties data type test
+                    if (res.body.errMsg) {
+                        expect(res.body.errMsg).to.be.a('string');
+                    }
+
+                    if (res.body.msg) {
+                        expect(res.body.msg).to.be.a('string');
+                    }
 
                     done();
                 });
@@ -71,10 +82,69 @@ describe('Tasks API', () => {
     /**
      * Test: Update a task
      */
-    describe('PUT: /update/:id', () => {});
+    describe('PUT: /update/:id', () => {
+        it('Should update the task with the given id', done => {
+            // send the request using chaiHttp
+            chai.request(server)
+                .put('/update/:id')
+                .send({
+                    task: 'New Task 1',
+                    subTasks: ['Sub Task 1', 'Sub Task 2'],
+                    status: false
+                })
+                .end((err, res) => {
+                    // check for no errors
+                    expect(err).to.be.null;
+
+                    // check for correct response status code
+                    expect(res.statusCode).to.be.equal(200);
+
+                    // check for correct properties
+                    expect(res.body).to.have.any.keys('msg', 'errMsg');
+
+                    // Check for correct properties data types
+                    if (res.body.msg) {
+                        expect(res.body.msg).to.be.a('string');
+                    }
+                    if (res.body.errMsg) {
+                        expect(res.body.errMsg).to.be.a('string');
+                    }
+
+                    // Finish the test using done method
+                    done();
+                });
+        });
+    });
 
     /**
      * Test: Delete a task
      */
-    describe('DELETE: /delete/:id', () => {});
+    describe('DELETE: /delete/:id', () => {
+        it('Should delete a task with the given id', done => {
+            chai.request(server)
+                .delete('/delete/:id')
+                .end((err, res) => {
+                    // check for no errors
+                    expect(err).to.be.null;
+
+                    // check for correct response code
+                    expect(res.statusCode).to.equal(200);
+
+                    // check for correct properties in the response body
+                    expect(res.body).to.have.any.keys('msg', 'errMsg');
+
+                    // check for correct data types of the properties in the response body
+                    if (res.body.msg) {
+                        expect(res.body.msg).to.be.a('string');
+                    }
+
+                    if (res.body.errMsg) {
+                        expect(res.body.errMsg).to.be.a('string');
+                    }
+
+                    // finish the end function with done method
+                    done();
+                });
+        });
+    });
 });
